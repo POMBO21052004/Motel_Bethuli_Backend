@@ -20,14 +20,12 @@ return [
     'allowed_methods' => ['*'],
 
     'allowed_origins' => [
-        'https://fec-attestations.vercel.app',
-        'https://fec-attestations-certify.vercel.app',
+        'https://motel-bethuli.vercel.app/',
         'http://localhost:5173',
-        'https://attestations.feconsultancy.com',
     ],
 
     'allowed_origins_patterns' => [
-        '#^https://fec-attestations.*\.vercel\.app$#',
+        '#^https://motel-bethuli.*\.vercel\.app$#',
     ],
 
     'allowed_headers' => ['*'],
