@@ -30,7 +30,7 @@ class UserSeeder extends Seeder
                 'actif' => true,
             ]
         );
-
+        
         User::updateOrCreate(
             ['email' => 'gilleskorusaki@gmail.com'],
             [

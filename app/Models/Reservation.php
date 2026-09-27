@@ -16,6 +16,7 @@ class Reservation extends Model
         'client_id',
         'receptionist_id',
         'reservation_date',
+        'end_date',
         'start_time',
         'end_time',
         'total_price',
@@ -28,6 +29,7 @@ class Reservation extends Model
         return [
             'status'           => ReservationStatus::class,
             'reservation_date' => 'date',
+            'end_date'         => 'date',
             'total_price'      => 'decimal:2',
         ];
     }
@@ -44,10 +46,7 @@ class Reservation extends Model
         return $query->where('status', ReservationStatus::CONFIRMED);
     }
 
-    public function scopeCompleted($query)
-    {
-        return $query->where('status', ReservationStatus::COMPLETED);
-    }
+
 
     // ─── Relations ───────────────────────────────────────────────────────────
 

@@ -38,7 +38,6 @@ class RoomController extends Controller
         $stats = [
             'total'       => Room::count(),
             'available'   => Room::where('status', RoomStatus::AVAILABLE)->count(),
-            'occupied'    => Room::where('status', RoomStatus::OCCUPIED)->count(),
             'maintenance' => Room::where('status', RoomStatus::MAINTENANCE)->count(),
             'floors'      => Room::distinct()->orderBy('floor')->pluck('floor'),
         ];

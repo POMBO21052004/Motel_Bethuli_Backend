@@ -20,34 +20,50 @@ class ReservationController extends Controller
         $validated = $request->validate([
             'room_id'          => 'required|exists:rooms,id',
             'reservation_date' => 'required|date',
+            'end_date'         => 'required|date|after_or_equal:reservation_date',
             'start_time'       => 'required|date_format:H:i',
             'end_time'         => 'required|date_format:H:i',
-            'exclude_id'       => 'nullable|string', // for edit mode
+            'exclude_id'       => 'nullable|string',
         ]);
 
-        $query = Reservation::where('room_id', $validated['room_id'])
-            ->whereDate('reservation_date', $validated['reservation_date'])
-            ->whereNotIn('status', [ReservationStatus::CANCELLED->value, ReservationStatus::COMPLETED->value])
-            ->where('start_time', '<', $validated['end_time'])
-            ->where('end_time', '>', $validated['start_time']);
-
-        // Vérifier le statut de la chambre elle-même
-        $room = Room::findOrFail($validated['room_id']);
-        if ($room->status->value !== 'available') {
-            $statusLabel = match($room->status->value) {
-                'occupied'    => 'occupée',
-                'maintenance' => 'en maintenance',
-                default       => 'indisponible',
-            };
+        if ($validated['reservation_date'] === $validated['end_date'] && $validated['end_time'] <= $validated['start_time']) {
             return response()->json([
                 'available'   => false,
-                'room_status' => $room->status->value,
-                'message'     => "Cette chambre est {$statusLabel} et ne peut pas recevoir de réservation.",
+                'message'     => "L'heure de fin doit être après l'heure de début pour une réservation le même jour.",
                 'occupied_by' => null,
                 'from'        => null,
                 'until'       => null,
             ]);
         }
+
+        $room = Room::findOrFail($validated['room_id']);
+        if ($room->status->value !== 'available') {
+            return response()->json([
+                'available'   => false,
+                'room_status' => $room->status->value,
+                'message'     => "Cette chambre est en maintenance et ne peut pas recevoir de réservation.",
+                'occupied_by' => null,
+                'from'        => null,
+                'until'       => null,
+            ]);
+        }
+
+        $query = Reservation::where('room_id', $validated['room_id'])
+            ->whereNotIn('status', [ReservationStatus::CANCELLED->value])
+            ->where(function ($q) use ($validated) {
+                $q->where('reservation_date', '<', $validated['end_date'])
+                  ->orWhere(function ($q2) use ($validated) {
+                      $q2->where('reservation_date', '=', $validated['end_date'])
+                         ->where('start_time', '<', $validated['end_time']);
+                  });
+            })
+            ->where(function ($q) use ($validated) {
+                $q->where('end_date', '>', $validated['reservation_date'])
+                  ->orWhere(function ($q2) use ($validated) {
+                      $q2->where('end_date', '=', $validated['reservation_date'])
+                         ->where('end_time', '>', $validated['start_time']);
+                  });
+            });
 
         if (!empty($validated['exclude_id'])) {
             $query->where('id', '!=', $validated['exclude_id']);
@@ -56,12 +72,15 @@ class ReservationController extends Controller
         $conflict = $query->with(['client:id,nom,prenom'])->first();
 
         if ($conflict) {
+            $fromDate = $conflict->reservation_date instanceof \Carbon\Carbon ? $conflict->reservation_date->format('d/m/Y') : $conflict->reservation_date;
+            $untilDate = $conflict->end_date instanceof \Carbon\Carbon ? $conflict->end_date->format('d/m/Y') : $conflict->end_date;
+
             return response()->json([
                 'available' => false,
                 'message'   => 'Cette chambre est déjà réservée sur ce créneau.',
                 'occupied_by' => $conflict->client ? trim($conflict->client->prenom . ' ' . $conflict->client->nom) : 'un client',
-                'from' => substr($conflict->start_time, 0, 5),
-                'until' => substr($conflict->end_time, 0, 5),
+                'from' => $fromDate . ' à ' . substr($conflict->start_time, 0, 5),
+                'until' => $untilDate . ' à ' . substr($conflict->end_time, 0, 5),
             ]);
         }
 
@@ -74,34 +93,50 @@ class ReservationController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'room_id' => 'required|exists:rooms,id',
-            'client_id' => 'required|exists:users,id',
+            'room_id'          => 'required|exists:rooms,id',
+            'client_id'        => 'required|exists:users,id',
             'reservation_date' => 'required|date|after_or_equal:today',
-            'start_time' => 'required|date_format:H:i',
-            'end_time' => 'required|date_format:H:i|after:start_time',
-            'total_price' => 'nullable|numeric|min:0',
-            'notes' => 'nullable|string|max:2000',
-            'status' => ['nullable', Rule::in(ReservationStatus::values())],
+            'end_date'         => 'required|date|after_or_equal:reservation_date',
+            'start_time'       => 'required|date_format:H:i',
+            'end_time'         => 'required|date_format:H:i',
+            'total_price'      => 'nullable|numeric|min:0',
+            'notes'            => 'nullable|string|max:2000',
+            'status'           => ['nullable', Rule::in(ReservationStatus::values())],
         ]);
+
+        if ($validated['reservation_date'] === $validated['end_date'] && $validated['end_time'] <= $validated['start_time']) {
+            return response()->json(['message' => 'L\'heure de fin doit être après l\'heure de début pour une réservation le même jour.'], 422);
+        }
 
         $clientExists = DB::table('users')
             ->where('id', $validated['client_id'])
             ->where('role', 'client')
             ->exists();
         if (!$clientExists) {
-            return response()->json(['message' => 'Le compte sélectionné n’est pas un client.'], 422);
+            return response()->json(['message' => 'Le compte sélectionné n\'est pas un client.'], 422);
         }
 
         $room = Room::findOrFail($validated['room_id']);
         if ($room->status->value !== 'available') {
-            return response()->json(['message' => 'Cette chambre n’est pas disponible.'], 422);
+            return response()->json(['message' => 'Cette chambre est en maintenance et ne peut pas recevoir de réservation.'], 422);
         }
 
         $hasConflict = Reservation::where('room_id', $room->id)
-            ->whereDate('reservation_date', $validated['reservation_date'])
-            ->whereNotIn('status', [ReservationStatus::CANCELLED->value, ReservationStatus::COMPLETED->value])
-            ->where('start_time', '<', $validated['end_time'])
-            ->where('end_time', '>', $validated['start_time'])
+            ->whereNotIn('status', [ReservationStatus::CANCELLED->value])
+            ->where(function ($q) use ($validated) {
+                $q->where('reservation_date', '<', $validated['end_date'])
+                  ->orWhere(function ($q2) use ($validated) {
+                      $q2->where('reservation_date', '=', $validated['end_date'])
+                         ->where('start_time', '<', $validated['end_time']);
+                  });
+            })
+            ->where(function ($q) use ($validated) {
+                $q->where('end_date', '>', $validated['reservation_date'])
+                  ->orWhere(function ($q2) use ($validated) {
+                      $q2->where('end_date', '=', $validated['reservation_date'])
+                         ->where('end_time', '>', $validated['start_time']);
+                  });
+            })
             ->exists();
 
         if ($hasConflict) {
@@ -110,14 +145,14 @@ class ReservationController extends Controller
 
         $reservation = Reservation::create([
             ...$validated,
-            'total_price' => $validated['total_price'] ?? $room->price_per_day ?? 0,
-            'status' => $validated['status'] ?? ReservationStatus::CONFIRMED->value,
+            'total_price'     => $validated['total_price'] ?? $room->price_per_day ?? 0,
+            'status'          => $validated['status'] ?? ReservationStatus::CONFIRMED->value,
             'receptionist_id' => $request->user()->id,
         ]);
 
         return response()->json([
             'message' => 'Réservation créée avec succès.',
-            'data' => $reservation->load(['room:id,name', 'client:id,nom,prenom']),
+            'data'    => $reservation->load(['room:id,name', 'client:id,nom,prenom']),
         ], 201);
     }
 
@@ -130,34 +165,51 @@ class ReservationController extends Controller
     public function update(Request $request, $id)
     {
         $reservation = Reservation::findOrFail($id);
-        
+
         $validated = $request->validate([
-            'room_id' => 'sometimes|exists:rooms,id',
-            'client_id' => 'sometimes|exists:users,id',
+            'room_id'          => 'sometimes|exists:rooms,id',
+            'client_id'        => 'sometimes|exists:users,id',
             'reservation_date' => 'sometimes|date',
-            'start_time' => 'sometimes|date_format:H:i',
-            'end_time' => 'sometimes|date_format:H:i',
-            'total_price' => 'nullable|numeric|min:0',
-            'notes' => 'nullable|string|max:2000',
-            'status' => ['nullable', Rule::in(ReservationStatus::values())],
+            'end_date'         => 'sometimes|date',
+            'start_time'       => 'sometimes|date_format:H:i',
+            'end_time'         => 'sometimes|date_format:H:i',
+            'total_price'      => 'nullable|numeric|min:0',
+            'notes'            => 'nullable|string|max:2000',
+            'status'           => ['nullable', Rule::in(ReservationStatus::values())],
         ]);
 
-        if (isset($validated['room_id']) || isset($validated['reservation_date']) || isset($validated['start_time']) || isset($validated['end_time'])) {
-            $roomId = $validated['room_id'] ?? $reservation->room_id;
-            $resDate = $validated['reservation_date'] ?? $reservation->reservation_date;
+        if (isset($validated['room_id']) || isset($validated['reservation_date']) || isset($validated['end_date']) || isset($validated['start_time']) || isset($validated['end_time'])) {
+            $roomId    = $validated['room_id'] ?? $reservation->room_id;
+            $resDate   = $validated['reservation_date'] ?? $reservation->reservation_date;
+            $endDate   = $validated['end_date'] ?? $reservation->end_date;
             $startTime = $validated['start_time'] ?? $reservation->start_time;
-            $endTime = $validated['end_time'] ?? $reservation->end_time;
-            $status = $validated['status'] ?? $reservation->status;
+            $endTime   = $validated['end_time'] ?? $reservation->end_time;
+            $status    = $validated['status'] ?? $reservation->status;
+
+            if ($resDate === $endDate && $endTime <= $startTime) {
+                return response()->json(['message' => 'L\'heure de fin doit être après l\'heure de début pour une réservation le même jour.'], 422);
+            }
 
             $hasConflict = Reservation::where('id', '!=', $id)
                 ->where('room_id', $roomId)
-                ->whereDate('reservation_date', $resDate)
-                ->whereNotIn('status', [ReservationStatus::CANCELLED->value, ReservationStatus::COMPLETED->value])
-                ->where('start_time', '<', $endTime)
-                ->where('end_time', '>', $startTime)
+                ->whereNotIn('status', [ReservationStatus::CANCELLED->value])
+                ->where(function ($q) use ($resDate, $endDate, $startTime, $endTime) {
+                    $q->where('reservation_date', '<', $endDate)
+                      ->orWhere(function ($q2) use ($endDate, $endTime) {
+                          $q2->where('reservation_date', '=', $endDate)
+                             ->where('start_time', '<', $endTime);
+                      });
+                })
+                ->where(function ($q) use ($resDate, $endDate, $startTime, $endTime) {
+                    $q->where('end_date', '>', $resDate)
+                      ->orWhere(function ($q2) use ($resDate, $startTime) {
+                          $q2->where('end_date', '=', $resDate)
+                             ->where('end_time', '>', $startTime);
+                      });
+                })
                 ->exists();
 
-            if ($hasConflict && !in_array($status, [ReservationStatus::CANCELLED->value, ReservationStatus::COMPLETED->value])) {
+            if ($hasConflict && $status !== ReservationStatus::CANCELLED->value) {
                 return response()->json(['message' => 'La chambre est déjà réservée sur ce créneau.'], 422);
             }
         }
@@ -166,7 +218,7 @@ class ReservationController extends Controller
 
         return response()->json([
             'message' => 'Réservation mise à jour avec succès.',
-            'data' => $reservation->fresh()->load(['room', 'client']),
+            'data'    => $reservation->fresh()->load(['room', 'client']),
         ]);
     }
 

@@ -59,6 +59,7 @@ class ClientController extends Controller
                     'room_name'        => $r->room?->name,
                     'floor'            => $r->room?->floor,
                     'reservation_date' => $r->reservation_date?->format('Y-m-d'),
+                    'end_date'         => $r->end_date?->format('Y-m-d'),
                     'start_time'       => $r->start_time,
                     'end_time'         => $r->end_time,
                     'total_price'      => $r->total_price,

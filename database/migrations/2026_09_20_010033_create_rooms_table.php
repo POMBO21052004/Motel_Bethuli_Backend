@@ -17,7 +17,7 @@ return new class extends Migration
             $table->unsignedInteger('capacity')->default(1);
             $table->decimal('price_per_hour', 10, 2)->nullable();
             $table->decimal('price_per_day', 10, 2)->nullable();
-            $table->enum('status', ['available', 'occupied', 'maintenance'])->default('available');
+            $table->enum('status', ['available', 'maintenance'])->default('available');
             $table->timestamps();
         });
     }

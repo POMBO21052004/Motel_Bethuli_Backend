@@ -5,14 +5,12 @@ namespace App\Enums;
 enum RoomStatus: string
 {
     case AVAILABLE   = 'available';
-    case OCCUPIED    = 'occupied';
     case MAINTENANCE = 'maintenance';
 
     public function label(): string
     {
         return match($this) {
             self::AVAILABLE   => 'Disponible',
-            self::OCCUPIED    => 'Occupée',
             self::MAINTENANCE => 'En maintenance',
         };
     }
