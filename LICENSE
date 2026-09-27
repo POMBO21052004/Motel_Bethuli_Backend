@@ -1,0 +1,119 @@
+LICENCE PROPRIÉTAIRE
+====================
+
+Application de Gestion des Attestations et Formations — Backend API
+Free Engineering Consultancy (FEC)
+
+Copyright (c) 2026 Free Engineering Consultancy (FEC)
+Tous droits réservés.
+
+---
+
+1. OBJET
+
+Le présent logiciel (ci-après « le Logiciel »), incluant l'ensemble de son code
+source, de sa documentation et de ses ressources associées, est la propriété
+exclusive de Free Engineering Consultancy (FEC).
+
+Le Logiciel fait partie de la solution « FEC — Gestion Attestations & Formations »,
+composée d'un frontend React et d'un backend Laravel API.
+
+---
+
+2. OCTROI DE LICENCE
+
+Sous réserve du respect des présentes conditions, FEC accorde une licence limitée,
+non exclusive, non transférable et révocable d'utilisation du Logiciel :
+
+  a) Aux employés, prestataires et partenaires autorisés de FEC, dans le cadre
+     de leurs activités professionnelles pour le compte de FEC ;
+
+  b) Uniquement pour un usage interne ou opérationnel lié à la gestion des
+     formations professionnelles et des attestations FEC.
+
+Aucune autre utilisation n'est autorisée sans accord écrit préalable de FEC.
+
+---
+
+3. RESTRICTIONS
+
+Il est strictement interdit, sans autorisation écrite préalable de FEC, de :
+
+  a) Copier, modifier, adapter ou créer des œuvres dérivées du Logiciel ;
+
+  b) Distribuer, sous-licencier, louer, prêter ou mettre à disposition le
+     Logiciel à des tiers ;
+
+  c) Décompiler, désassembler ou tenter d'extraire le code source du Logiciel
+     lorsque la loi applicable ne l'autorise pas expressément ;
+
+  d) Supprimer ou altérer les mentions de copyright, de marque ou de licence ;
+
+  e) Utiliser le Logiciel à des fins illégales ou contraires à l'éthique
+     professionnelle.
+
+---
+
+4. PROPRIÉTÉ INTELLECTUELLE
+
+Le Logiciel, incluant mais sans s'y limiter : le code source, l'architecture,
+les modèles de données, les templates PDF, les templates e-mail, la documentation
+API et les marques associées, reste la propriété exclusive de FEC.
+
+La présente licence ne confère aucun droit de propriété sur le Logiciel,
+uniquement un droit d'utilisation limité.
+
+---
+
+5. CONFIDENTIALITÉ
+
+Le code source, les schémas de base de données et la documentation du Logiciel
+sont considérés comme confidentiels. Toute personne ayant accès au Logiciel
+s'engage à ne pas divulguer, publier ou transmettre ces éléments à des tiers
+non autorisés.
+
+---
+
+6. GARANTIE ET RESPONSABILITÉ
+
+LE LOGICIEL EST FOURNI « EN L'ÉTAT », SANS GARANTIE D'AUCUNE SORTE, EXPRESSE
+OU IMPLICITE, Y COMPRIS, SANS LIMITATION, LES GARANTIES DE QUALITÉ MARCHANDE,
+D'ADÉQUATION À UN USAGE PARTICULIER ET D'ABSENCE DE CONTREFAÇON.
+
+EN AUCUN CAS FEC NE POURRA ÊTRE TENU RESPONSABLE DE TOUT DOMMAGE DIRECT,
+INDIRECT, ACCESSOIRE, SPÉCIAL OU CONSÉCUTIF RÉSULTANT DE L'UTILISATION OU
+DE L'IMPOSSIBILITÉ D'UTILISER LE LOGICIEL.
+
+---
+
+7. RÉSILIATION
+
+Cette licence est automatiquement résiliée en cas de violation de l'une de
+ses conditions. En cas de résiliation, l'utilisateur doit cesser toute
+utilisation du Logiciel et détruire toutes les copies en sa possession.
+
+---
+
+8. LOI APPLICABLE
+
+Les présentes conditions sont régies par le droit camerounais. Tout litige
+relatif à cette licence sera soumis à la compétence exclusive des tribunaux
+compétents de Douala, Cameroun.
+
+---
+
+9. CONTACT
+
+Free Engineering Consultancy (FEC)
+E-mail : contact@fec-consulting.com
+
+---
+
+PROPRIETARY LICENSE (English summary)
+=====================================
+
+Copyright (c) 2026 Free Engineering Consultancy (FEC). All rights reserved.
+
+This software is proprietary and confidential. Unauthorized copying,
+modification, distribution, or use is strictly prohibited without prior
+written consent from FEC.

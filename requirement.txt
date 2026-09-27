@@ -1,0 +1,5 @@
+composer create-project laravel/laravel=12 backend
+
+composer require barryvdh/laravel-dompdf
+composer require maatwebsite/excel
+composer require laravel/sanctum

@@ -1,0 +1,20 @@
+{
+    "comic sans ms": {
+        "normal": "comic_sans_ms_normal_7cf3357b9deb5bc4c8b4bbd0179db0ba",
+        "bold": "C:\\Users\\Alban\\Desktop\\Free Ingeneering Consultancy\\Application de gestion attestation et formation\\Application\\FreeIngeneeringConsulting_AGA_Backend\\storage\\fonts\/comic_sans_ms_bold_707020780fe1caf8eded21b93bf735f8",
+        "italic": "C:\\Users\\Alban\\Desktop\\Free Ingeneering Consultancy\\Application de gestion attestation et formation\\Application\\FreeIngeneeringConsulting_AGA_Backend\\storage\\fonts\/comic_sans_ms_italic_190a544c551b8562187c1a96fefdb402",
+        "bold_italic": "C:\\Users\\Alban\\Desktop\\Free Ingeneering Consultancy\\Application de gestion attestation et formation\\Application\\FreeIngeneeringConsulting_AGA_Backend\\storage\\fonts\/comic_sans_ms_bold_italic_e8471d376cf3f76557ea09554fb2a07a"
+    },
+    "helvetica": {
+        "normal": "helvetica_normal_5c89b7a58e7c7cfacf7b4f42e1ed8d62",
+        "bold": "C:\\Users\\Alban\\Desktop\\Free Ingeneering Consultancy\\Application de gestion attestation et formation\\Application\\FreeIngeneeringConsulting_AGA_Backend\\vendor\\dompdf\\dompdf\/lib\/fonts\/Helvetica-Bold",
+        "italic": "C:\\Users\\Alban\\Desktop\\Free Ingeneering Consultancy\\Application de gestion attestation et formation\\Application\\FreeIngeneeringConsulting_AGA_Backend\\vendor\\dompdf\\dompdf\/lib\/fonts\/Helvetica-Oblique",
+        "bold_italic": "C:\\Users\\Alban\\Desktop\\Free Ingeneering Consultancy\\Application de gestion attestation et formation\\Application\\FreeIngeneeringConsulting_AGA_Backend\\vendor\\dompdf\\dompdf\/lib\/fonts\/Helvetica-BoldOblique"
+    },
+    "arial": {
+        "normal": "C:\\Users\\Alban\\Desktop\\Free Ingeneering Consultancy\\Application de gestion attestation et formation\\Application\\FreeIngeneeringConsulting_AGA_Backend\\storage\\fonts\/arial_normal_480bbe7aabdefcc77dfa9ac80a741fe6",
+        "bold": "C:\\Users\\Alban\\Desktop\\Free Ingeneering Consultancy\\Application de gestion attestation et formation\\Application\\FreeIngeneeringConsulting_AGA_Backend\\storage\\fonts\/arial_bold_89f10e1a8ff862ad6e77340daa265598",
+        "italic": "C:\\Users\\Alban\\Desktop\\Free Ingeneering Consultancy\\Application de gestion attestation et formation\\Application\\FreeIngeneeringConsulting_AGA_Backend\\storage\\fonts\/arial_italic_fca5df4261b699dff9e6cf91bddda2fd",
+        "bold_italic": "arial_bold_italic_8511453f95521c10fac2be11dc13e75f"
+    }
+}
