@@ -46,7 +46,7 @@ class ClientController extends Controller
 
     public function show(string $id)
     {
-        $client = User::where('role', UserRole::CLIENT)->findOrFail($id);
+        $client = User::with('customerProfile')->where('role', UserRole::CLIENT)->findOrFail($id);
 
         // Charger les réservations avec chambre associée
         $reservations = $client->reservations()
@@ -104,6 +104,8 @@ class ClientController extends Controller
         $validated['is_verified'] = true;
 
         $client = User::create($validated);
+
+        \Illuminate\Support\Facades\Mail::to($client->email)->send(new \App\Mail\AccountCreatedMail($client, $plainPassword));
 
         return response()->json(['data' => $client, 'message' => 'Client créé avec succès. Le mot de passe généré est : ' . $plainPassword], 201);
     }
@@ -216,5 +218,34 @@ class ClientController extends Controller
         $client = User::where('role', UserRole::CLIENT)->findOrFail($id);
         $client->terminateSessions();
         return response()->json(['message' => 'Toutes les sessions de ce client ont été déconnectées.']);
+    }
+
+    /**
+     * Vérifie ou déverouille la CNI du client.
+     * Uniquement possible si recto et verso sont uploadés.
+     */
+    public function toggleCniVerified(string $id)
+    {
+        $client = User::with('customerProfile')->where('role', UserRole::CLIENT)->findOrFail($id);
+        $profile = $client->customerProfile;
+
+        if (!$profile) {
+            return response()->json(['message' => 'Profil client introuvable.'], 404);
+        }
+
+        if (!$profile->cni_recto_path || !$profile->cni_verso_path) {
+            return response()->json([
+                'message' => 'Les deux faces de la CNI (recto et verso) doivent être présentes avant de pouvoir vérifier.'
+            ], 422);
+        }
+
+        $profile->cni_verified = !$profile->cni_verified;
+        $profile->save();
+
+        return response()->json([
+            'message'      => $profile->cni_verified ? 'CNI vérifiée avec succès.' : 'Vérification de la CNI annulée.',
+            'cni_verified' => $profile->cni_verified,
+            'data'         => $profile,
+        ]);
     }
 }

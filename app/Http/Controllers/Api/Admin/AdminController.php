@@ -57,8 +57,9 @@ class AdminController extends Controller
     public function reservations(Request $request)
     {
         $query = Reservation::with([
-            'room:id,name',
-            'client:id,nom,prenom,email,phone',
+            'room:id,name,description_fr',
+            'room.primaryImage:id,room_id,image_path',
+            'client:id,nom,prenom,email,phone,profil',
             'receptionist:id,nom,prenom',
         ])->latest('reservation_date')->latest('start_time');
 

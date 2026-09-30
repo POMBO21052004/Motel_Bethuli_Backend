@@ -49,6 +49,8 @@ class ClientController extends Controller
         ]);
         CustomerProfile::create(['user_id' => $client->id]);
 
+        \Illuminate\Support\Facades\Mail::to($client->email)->send(new \App\Mail\AccountCreatedMail($client, $validated['password']));
+
         return response()->json([
             'message' => 'Client créé avec succès.',
             'data' => $client->load('customerProfile'),

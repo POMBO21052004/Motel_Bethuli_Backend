@@ -73,6 +73,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::patch('/clients/{id}', [\App\Http\Controllers\Api\Admin\ClientController::class, 'toggleActif']);
         Route::post('/clients/{id}/force-verify', [\App\Http\Controllers\Api\Admin\ClientController::class, 'forceVerify']);
         Route::post('/clients/{id}/terminate-sessions', [\App\Http\Controllers\Api\Admin\ClientController::class, 'terminateSessions']);
+        Route::post('/clients/{id}/toggle-cni-verified', [\App\Http\Controllers\Api\Admin\ClientController::class, 'toggleCniVerified']);
 
         // Rooms
         Route::get('/rooms', [\App\Http\Controllers\Api\Admin\RoomController::class, 'index']);
@@ -96,8 +97,14 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::prefix('client')->middleware(['role:client,admin,receptionniste'])->group(function () {
         Route::get('/dashboard', [\App\Http\Controllers\Api\Client\DashboardController::class, 'index']);
+        Route::get('/rooms', [\App\Http\Controllers\Api\Client\RoomController::class, 'index']);
         Route::get('/reservations', [\App\Http\Controllers\Api\Client\ReservationController::class, 'index']);
+        Route::post('/reservations', [\App\Http\Controllers\Api\Client\ReservationController::class, 'store']);
         Route::get('/ratings', [\App\Http\Controllers\Api\Client\RatingController::class, 'index']);
+        Route::post('/ratings', [\App\Http\Controllers\Api\Client\RatingController::class, 'store']);
         Route::get('/profile', [\App\Http\Controllers\Api\Client\ProfileController::class, 'show']);
+        Route::post('/profile', [\App\Http\Controllers\Api\Client\ProfileController::class, 'update']);
+        Route::post('/profile/password', [\App\Http\Controllers\Api\Client\ProfileController::class, 'updatePassword']);
+        Route::post('/profile/cni', [\App\Http\Controllers\Api\Client\ProfileController::class, 'updateCni']);
     });
 });

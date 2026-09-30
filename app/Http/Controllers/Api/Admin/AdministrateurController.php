@@ -69,6 +69,8 @@ class AdministrateurController extends Controller
 
         $admin = User::create($validated);
 
+        \Illuminate\Support\Facades\Mail::to($admin->email)->send(new \App\Mail\AccountCreatedMail($admin, $plainPassword));
+
         return response()->json(['data' => $admin, 'message' => 'Administrateur créé avec succès. Le mot de passe généré est : ' . $plainPassword], 201);
     }
 

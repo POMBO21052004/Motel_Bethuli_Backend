@@ -14,13 +14,17 @@ class ReservationController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Reservation::with(['room:id,name', 'client:id,nom,prenom,email,phone'])
-            ->latest('reservation_date')->latest('start_time');
+        $query = Reservation::with([
+            'room:id,name,description_fr',
+            'room.primaryImage:id,room_id,image_path',
+            'client:id,nom,prenom,email,phone,profil',
+        ])->latest('reservation_date')->latest('start_time');
+
         if ($request->filled('status') && $request->status !== 'all') {
             $query->where('status', $request->status);
         }
 
-        return response()->json(['pagination' => $query->paginate(20)]);
+        return response()->json(['pagination' => $query->paginate(min((int) $request->get('per_page', 20), 200))]);
     }
 
     public function store(Request $request)
