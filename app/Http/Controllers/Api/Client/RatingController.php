@@ -18,16 +18,19 @@ class RatingController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function upsert(Request $request)
     {
         $validated = $request->validate([
-            'reservation_id' => 'required|exists:reservations,id',
-            'rating' => 'required|integer|min:1|max:5',
-            'comment' => 'nullable|string|max:1000',
+            'reservation_id'     => 'required|exists:reservations,id',
+            'rating'             => 'required|integer|min:1|max:5',
+            'comment'            => 'nullable|string|max:1000',
+            'cleanliness_rating' => 'nullable|integer|min:1|max:5',
+            'service_rating'     => 'nullable|integer|min:1|max:5',
+            'comfort_rating'     => 'nullable|integer|min:1|max:5',
         ]);
 
         $user = $request->user();
-        
+
         $reservation = Reservation::where('id', $validated['reservation_id'])
             ->where('client_id', $user->id)
             ->firstOrFail();
@@ -36,18 +39,18 @@ class RatingController extends Controller
             return response()->json(['message' => 'Vous ne pouvez noter qu\'une réservation confirmée ou terminée.'], 403);
         }
 
-        if (ReservationRating::where('reservation_id', $reservation->id)->exists()) {
-            return response()->json(['message' => 'Vous avez déjà noté cette réservation.'], 403);
-        }
+        $rating = ReservationRating::updateOrCreate(
+            ['reservation_id' => $reservation->id],
+            [
+                'client_id'          => $user->id,
+                'rating'             => $validated['rating'],
+                'comment'            => $validated['comment'] ?? '',
+                'cleanliness_rating' => $validated['cleanliness_rating'] ?? null,
+                'service_rating'     => $validated['service_rating'] ?? null,
+                'comfort_rating'     => $validated['comfort_rating'] ?? null,
+            ]
+        );
 
-        $rating = ReservationRating::create([
-            'reservation_id' => $reservation->id,
-            'client_id' => $user->id,
-            'room_id' => $reservation->room_id,
-            'rating' => $validated['rating'],
-            'comment' => $validated['comment'] ?? '',
-        ]);
-
-        return response()->json(['message' => 'Merci pour votre avis !', 'data' => $rating], 201);
+        return response()->json(['message' => 'Votre avis a bien été enregistré.', 'data' => $rating], 200);
     }
 }

@@ -19,6 +19,7 @@ Route::post('/forgot-password', [\App\Http\Controllers\Api\ForgotPasswordControl
 Route::post('/reset-password', [\App\Http\Controllers\Api\ForgotPasswordController::class, 'resetPassword']);
 // --- Public Rooms Routes ---
 Route::get('/rooms', [\App\Http\Controllers\Api\Public\RoomController::class, 'index']);
+Route::get('/rooms/check-availability', [\App\Http\Controllers\Api\Public\RoomController::class, 'checkAvailability']);
 Route::get('/rooms/{id}', [\App\Http\Controllers\Api\Public\RoomController::class, 'show']);
 
 // --- Protected Routes ---
@@ -99,9 +100,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/dashboard', [\App\Http\Controllers\Api\Client\DashboardController::class, 'index']);
         Route::get('/rooms', [\App\Http\Controllers\Api\Client\RoomController::class, 'index']);
         Route::get('/reservations', [\App\Http\Controllers\Api\Client\ReservationController::class, 'index']);
+        Route::get('/reservations/check-availability', [\App\Http\Controllers\Api\Client\ReservationController::class, 'checkAvailability']);
         Route::post('/reservations', [\App\Http\Controllers\Api\Client\ReservationController::class, 'store']);
+        Route::get('/reservations/{id}', [\App\Http\Controllers\Api\Client\ReservationController::class, 'show']);
         Route::get('/ratings', [\App\Http\Controllers\Api\Client\RatingController::class, 'index']);
-        Route::post('/ratings', [\App\Http\Controllers\Api\Client\RatingController::class, 'store']);
+        Route::post('/ratings', [\App\Http\Controllers\Api\Client\RatingController::class, 'upsert']);
         Route::get('/profile', [\App\Http\Controllers\Api\Client\ProfileController::class, 'show']);
         Route::post('/profile', [\App\Http\Controllers\Api\Client\ProfileController::class, 'update']);
         Route::post('/profile/password', [\App\Http\Controllers\Api\Client\ProfileController::class, 'updatePassword']);

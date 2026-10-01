@@ -122,7 +122,18 @@ class RoomController extends Controller
      */
     public function show(string $id)
     {
-        $room = Room::with(['images', 'reservations.client'])->findOrFail($id);
+        $room = Room::with(['images', 'reservations.client', 'reservations.rating.client'])->findOrFail($id);
+        
+        $ratings = collect();
+        foreach ($room->reservations as $res) {
+            if ($res->rating) {
+                $ratings->push($res->rating);
+            }
+        }
+        $room->ratings = $ratings;
+        $room->avg_rating = $ratings->avg('rating');
+        $room->ratings_count = $ratings->count();
+
         return response()->json(['data' => $room]);
     }
 

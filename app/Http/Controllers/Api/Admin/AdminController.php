@@ -57,7 +57,7 @@ class AdminController extends Controller
     public function reservations(Request $request)
     {
         $query = Reservation::with([
-            'room:id,name,description_fr',
+            'room:id,name,description_fr,floor,capacity,price_per_day',
             'room.primaryImage:id,room_id,image_path',
             'client:id,nom,prenom,email,phone,profil',
             'receptionist:id,nom,prenom',
