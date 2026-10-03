@@ -22,11 +22,10 @@ class RatingController extends Controller
     {
         $validated = $request->validate([
             'reservation_id'     => 'required|exists:reservations,id',
-            'rating'             => 'required|integer|min:1|max:5',
             'comment'            => 'nullable|string|max:1000',
-            'cleanliness_rating' => 'nullable|integer|min:1|max:5',
-            'service_rating'     => 'nullable|integer|min:1|max:5',
-            'comfort_rating'     => 'nullable|integer|min:1|max:5',
+            'cleanliness_rating' => 'required|integer|min:1|max:5',
+            'service_rating'     => 'required|integer|min:1|max:5',
+            'comfort_rating'     => 'required|integer|min:1|max:5',
         ]);
 
         $user = $request->user();
@@ -35,19 +34,21 @@ class RatingController extends Controller
             ->where('client_id', $user->id)
             ->firstOrFail();
 
-        if ($reservation->status !== ReservationStatus::CONFIRMED && $reservation->status !== ReservationStatus::COMPLETED) {
-            return response()->json(['message' => 'Vous ne pouvez noter qu\'une réservation confirmée ou terminée.'], 403);
+        if ($reservation->status !== ReservationStatus::CONFIRMED) {
+            return response()->json(['message' => 'Vous ne pouvez noter qu\'une réservation confirmée.'], 403);
         }
+
+        $computedRating = (int) round(($validated['cleanliness_rating'] + $validated['service_rating'] + $validated['comfort_rating']) / 3);
 
         $rating = ReservationRating::updateOrCreate(
             ['reservation_id' => $reservation->id],
             [
                 'client_id'          => $user->id,
-                'rating'             => $validated['rating'],
+                'rating'             => $computedRating,
                 'comment'            => $validated['comment'] ?? '',
-                'cleanliness_rating' => $validated['cleanliness_rating'] ?? null,
-                'service_rating'     => $validated['service_rating'] ?? null,
-                'comfort_rating'     => $validated['comfort_rating'] ?? null,
+                'cleanliness_rating' => $validated['cleanliness_rating'],
+                'service_rating'     => $validated['service_rating'],
+                'comfort_rating'     => $validated['comfort_rating'],
             ]
         );
 

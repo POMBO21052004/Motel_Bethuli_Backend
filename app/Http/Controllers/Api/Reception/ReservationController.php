@@ -52,7 +52,7 @@ class ReservationController extends Controller
 
         $hasConflict = Reservation::where('room_id', $room->id)
             ->whereDate('reservation_date', $validated['reservation_date'])
-            ->whereNotIn('status', [ReservationStatus::CANCELLED->value, ReservationStatus::COMPLETED->value])
+            ->whereNotIn('status', [ReservationStatus::CANCELLED->value])
             ->where('start_time', '<', $validated['end_time'])
             ->where('end_time', '>', $validated['start_time'])
             ->exists();

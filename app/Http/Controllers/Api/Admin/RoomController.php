@@ -65,6 +65,8 @@ class RoomController extends Controller
             'price_per_hour' => 'nullable|numeric|min:0',
             'price_per_day'  => 'required|numeric|min:0',
             'status'         => ['required', Rule::in(RoomStatus::values())],
+            'features'       => 'nullable|array|max:20',
+            'features.*'     => 'string|max:100',
             'images'         => 'nullable|array|max:10',
             'images.*'       => 'image|mimes:jpeg,jpg,png,webp|max:5120',
             'image_urls'     => 'nullable|array|max:10',
@@ -81,6 +83,7 @@ class RoomController extends Controller
             'price_per_hour' => $validated['price_per_hour'] ?? null,
             'price_per_day'  => $validated['price_per_day'],
             'status'         => $validated['status'],
+            'features'       => $validated['features'] ?? [],
         ]);
 
         $primaryIndex = $validated['primary_image'] ?? 0;
@@ -153,6 +156,8 @@ class RoomController extends Controller
             'price_per_hour' => 'nullable|numeric|min:0',
             'price_per_day'  => 'sometimes|required|numeric|min:0',
             'status'         => ['sometimes', 'required', Rule::in(RoomStatus::values())],
+            'features'       => 'nullable|array|max:20',
+            'features.*'     => 'string|max:100',
             'images'         => 'nullable|array|max:10',
             'images.*'       => 'image|mimes:jpeg,jpg,png,webp|max:5120',
             'image_urls'     => 'nullable|array|max:10',
@@ -163,16 +168,22 @@ class RoomController extends Controller
             'delete_image_ids.*' => 'exists:room_images,id',
         ]);
 
-        $room->update([
+        $updateData = [
             'name'           => $validated['name'] ?? $room->name,
             'floor'          => $validated['floor'] ?? $room->floor,
             'description_fr' => $validated['description_fr'] ?? $room->description_fr,
-            'description_en' => $validated['description_en'] ?? $room->description_en,
+            'description_en' => array_key_exists('description_en', $validated) ? $validated['description_en'] : $room->description_en,
             'capacity'       => $validated['capacity'] ?? $room->capacity,
-            'price_per_hour' => $validated['price_per_hour'] ?? $room->price_per_hour,
+            'price_per_hour' => array_key_exists('price_per_hour', $validated) ? $validated['price_per_hour'] : $room->price_per_hour,
             'price_per_day'  => $validated['price_per_day'] ?? $room->price_per_day,
             'status'         => $validated['status'] ?? $room->status,
-        ]);
+        ];
+
+        if (array_key_exists('features', $validated)) {
+            $updateData['features'] = $validated['features'];
+        }
+
+        $room->update($updateData);
 
         // Suppression d'images sélectionnées
         if (!empty($validated['delete_image_ids'])) {

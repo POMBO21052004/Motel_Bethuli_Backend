@@ -25,7 +25,6 @@ class DashboardController extends Controller
             'total'         => $client->reservations()->count(),
             'pending'       => $client->reservations()->where('status', ReservationStatus::PENDING)->count(),
             'confirmed'     => $client->reservations()->where('status', ReservationStatus::CONFIRMED)->count(),
-            'completed'     => $client->reservations()->where('status', ReservationStatus::COMPLETED)->count(),
             'ratings_count' => ReservationRating::where('client_id', $client->id)->count(),
         ];
 

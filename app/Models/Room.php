@@ -20,6 +20,7 @@ class Room extends Model
         'price_per_hour',
         'price_per_day',
         'status',
+        'features',
     ];
 
     protected function casts(): array
@@ -28,6 +29,7 @@ class Room extends Model
             'status'   => RoomStatus::class,
             'capacity' => 'integer',
             'floor'    => 'integer',
+            'features' => 'array',
         ];
     }
 

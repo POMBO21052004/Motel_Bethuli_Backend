@@ -39,7 +39,7 @@ class RoomController extends Controller
             $endDate = $request->end_date;
             
             $query->whereDoesntHave('reservations', function ($q) use ($startDate, $endDate) {
-                $q->whereNotIn('status', [ReservationStatus::CANCELLED->value, ReservationStatus::COMPLETED->value])
+                $q->whereNotIn('status', [ReservationStatus::CANCELLED->value])
                   ->where(function($q2) use ($startDate, $endDate) {
                       $q2->where('reservation_date', '<', $endDate)
                          ->where('end_date', '>', $startDate);
@@ -158,7 +158,6 @@ class RoomController extends Controller
 
         $excludedStatuses = [
             \App\Enums\ReservationStatus::CANCELLED->value,
-            \App\Enums\ReservationStatus::COMPLETED->value,
         ];
 
         $conflict = \App\Models\Reservation::where('room_id', $room->id)

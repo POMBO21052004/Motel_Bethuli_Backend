@@ -20,8 +20,21 @@ class ProfileController extends Controller
         $validated = $request->validate([
             'nom' => 'required|string|max:255',
             'prenom' => 'required|string|max:255',
+            'code_phone' => 'nullable|string|max:10',
             'phone' => 'nullable|string|max:20',
+            'sexe' => 'nullable|string|max:10',
+            'date_naissance' => 'nullable|date',
+            'profil' => 'nullable|image|max:5120',
         ]);
+
+        if ($request->hasFile('profil')) {
+            if ($user->profil) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($user->profil);
+            }
+            $validated['profil'] = $request->file('profil')->store('profiles', 'public');
+        } else {
+            unset($validated['profil']);
+        }
 
         $user->update($validated);
 

@@ -65,10 +65,9 @@ class ReservationController extends Controller
             return response()->json(['message' => 'Cette chambre n\'est pas disponible pour le moment.'], 422);
         }
 
-        // Vérification des conflits (chevauchement) — exclut CANCELLED et COMPLETED
+        // Vérification des conflits (chevauchement) — exclut uniquement CANCELLED
         $excludedStatuses = [
             ReservationStatus::CANCELLED->value,
-            ReservationStatus::COMPLETED->value,
         ];
 
         $conflict = Reservation::where('room_id', $room->id)
@@ -127,7 +126,6 @@ class ReservationController extends Controller
 
         $excludedStatuses = [
             ReservationStatus::CANCELLED->value,
-            ReservationStatus::COMPLETED->value,
         ];
 
         $conflict = Reservation::where('room_id', $room->id)
