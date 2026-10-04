@@ -15,6 +15,8 @@ class RoomController extends Controller
     {
         $query = Room::with(['primaryImage', 'images'])
                      ->where('status', RoomStatus::AVAILABLE)
+                     ->withAvg('ratings', 'rating')
+                     ->orderByDesc('ratings_avg_rating')
                      ->orderBy('floor')
                      ->orderBy('name');
 

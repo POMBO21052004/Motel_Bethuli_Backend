@@ -29,6 +29,11 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // --- Admin Routes ---
     Route::prefix('admin')->middleware(['auth:sanctum', 'role:admin'])->group(function () {
+        // Profile (own)
+        Route::get('/profile', [\App\Http\Controllers\Api\Client\ProfileController::class, 'show']);
+        Route::post('/profile', [\App\Http\Controllers\Api\Client\ProfileController::class, 'update']);
+        Route::post('/profile/password', [\App\Http\Controllers\Api\Client\ProfileController::class, 'updatePassword']);
+
         Route::get('/dashboard', [\App\Http\Controllers\Api\Admin\DashboardController::class, 'index']);
         Route::get('/users/{role}', [\App\Http\Controllers\Api\Admin\AdminController::class, 'users']);
         Route::patch('/users/{id}/status', [\App\Http\Controllers\Api\Admin\AdminController::class, 'updateUserStatus']);

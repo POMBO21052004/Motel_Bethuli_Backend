@@ -75,4 +75,9 @@ class Room extends Model
     {
         return $this->hasMany(Reservation::class);
     }
+
+    public function ratings(): \Illuminate\Database\Eloquent\Relations\HasManyThrough
+    {
+        return $this->hasManyThrough(ReservationRating::class, Reservation::class);
+    }
 }

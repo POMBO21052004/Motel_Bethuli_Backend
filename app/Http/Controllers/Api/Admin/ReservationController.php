@@ -169,8 +169,8 @@ class ReservationController extends Controller
         $validated = $request->validate([
             'room_id'          => 'sometimes|exists:rooms,id',
             'client_id'        => 'sometimes|exists:users,id',
-            'reservation_date' => 'sometimes|date',
-            'end_date'         => 'sometimes|date',
+            'reservation_date' => 'sometimes|date|after_or_equal:today',
+            'end_date'         => 'sometimes|date|after:reservation_date',
             'start_time'       => 'sometimes|date_format:H:i',
             'end_time'         => 'sometimes|date_format:H:i',
             'total_price'      => 'nullable|numeric|min:0',

@@ -13,7 +13,7 @@ class ClientController extends Controller
 {
     public function index(Request $request)
     {
-        $query = User::where('role', UserRole::CLIENT)->orderBy('created_at', 'desc');
+        $query = User::with('customerProfile')->where('role', UserRole::CLIENT)->orderBy('created_at', 'desc');
 
         if ($request->has('search') && $request->search != '') {
             $search = $request->search;
