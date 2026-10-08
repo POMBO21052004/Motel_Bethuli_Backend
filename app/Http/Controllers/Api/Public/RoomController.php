@@ -20,33 +20,15 @@ class RoomController extends Controller
                      ->orderBy('floor')
                      ->orderBy('name');
 
-        if ($request->filled('capacity')) {
-            $query->where('capacity', '>=', $request->capacity);
-        }
-
-        if ($request->filled('floor')) {
-            $query->where('floor', $request->floor);
-        }
-
-        if ($request->filled('min_price')) {
-            $query->where('price_per_day', '>=', $request->min_price);
-        }
-
-        if ($request->filled('max_price')) {
-            $query->where('price_per_day', '<=', $request->max_price);
-        }
-
         if ($request->filled('start_date') && $request->filled('end_date')) {
             $startDate = $request->start_date;
             $endDate = $request->end_date;
             
-            $query->whereDoesntHave('reservations', function ($q) use ($startDate, $endDate) {
+            $query->with(['reservations' => function($q) use ($startDate, $endDate) {
                 $q->whereNotIn('status', [ReservationStatus::CANCELLED->value])
-                  ->where(function($q2) use ($startDate, $endDate) {
-                      $q2->where('reservation_date', '<', $endDate)
-                         ->where('end_date', '>', $startDate);
-                  });
-            });
+                  ->where('reservation_date', '<', $endDate)
+                  ->where('end_date', '>', $startDate);
+            }]);
         }
 
         if ($request->filled('limit')) {
@@ -62,16 +44,27 @@ class RoomController extends Controller
         $currentTime = $now->format('H:i:s');
         $currentDate = $now->format('Y-m-d');
 
-        $items->transform(function ($room) use ($currentDate, $currentTime) {
-            // Check if there is an active confirmed reservation right now
+        $items->transform(function ($room) use ($currentDate, $currentTime, $request) {
+            // is_occupied_now logic
+            $isOccupied = false;
+            // Since we might have overridden reservations with the with() clause, we shouldn't rely on it for is_occupied_now if start_date is passed.
+            // But actually we need both. Let's do a direct DB query for is_occupied_now to avoid relation conflict, or just let it be.
             $isOccupied = $room->reservations()
                 ->where('status', ReservationStatus::CONFIRMED->value)
                 ->whereDate('reservation_date', $currentDate)
                 ->whereTime('start_time', '<=', $currentTime)
                 ->whereTime('end_time', '>=', $currentTime)
                 ->exists();
-
             $room->is_occupied_now = $isOccupied;
+
+            // Date overlap logic
+            if ($request->filled('start_date') && $request->filled('end_date')) {
+                $room->is_occupied_for_dates = $room->reservations->isNotEmpty();
+                unset($room->reservations);
+            } else {
+                $room->is_occupied_for_dates = false;
+            }
+
             return $room;
         });
 

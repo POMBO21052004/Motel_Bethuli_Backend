@@ -22,49 +22,37 @@ class RoomController extends Controller
 
         $query = Room::with(['primaryImage', 'images'])->orderBy('floor')->orderBy('name');
 
-        if ($request->filled('floor')) {
-            $query->where('floor', $request->floor);
-        }
-
-        if ($request->filled('capacity')) {
-            $query->where('capacity', '>=', $request->capacity);
-        }
-
-        if ($request->filled('min_price')) {
-            $query->where('price_per_day', '>=', $request->min_price);
-        }
-
-        if ($request->filled('max_price')) {
-            $query->where('price_per_day', '<=', $request->max_price);
-        }
-
         // Available between start_date and end_date
         if ($request->filled('start_date') && $request->filled('end_date')) {
             $startDate = $request->start_date;
             $endDate = $request->end_date;
             
-            $query->whereDoesntHave('reservations', function ($q) use ($startDate, $endDate) {
+            $query->with(['reservations' => function($q) use ($startDate, $endDate) {
                 $q->whereNotIn('status', [ReservationStatus::CANCELLED->value])
-                  ->where(function($q2) use ($startDate, $endDate) {
-                      $q2->where('reservation_date', '<', $endDate)
-                         ->where('end_date', '>', $startDate);
-                  });
-            });
-            // Should also be AVAILABLE status
-            $query->where('status', RoomStatus::AVAILABLE->value);
+                  ->where('reservation_date', '<', $endDate)
+                  ->where('end_date', '>', $startDate);
+            }]);
         }
 
         $perPage = min((int) $request->get('per_page', 50), 100);
         $rooms = $query->paginate($perPage);
 
         // Append is_occupied_now logic
-        $rooms->getCollection()->transform(function ($room) use ($today, $time) {
+        $rooms->getCollection()->transform(function ($room) use ($today, $time, $request) {
             $room->is_occupied_now = $room->reservations()
                 ->where('status', ReservationStatus::CONFIRMED->value)
                 ->whereDate('reservation_date', $today)
                 ->whereTime('start_time', '<=', $time)
                 ->whereTime('end_time', '>=', $time)
                 ->exists();
+
+            if ($request->filled('start_date') && $request->filled('end_date')) {
+                $room->is_occupied_for_dates = $room->reservations->isNotEmpty();
+                unset($room->reservations);
+            } else {
+                $room->is_occupied_for_dates = false;
+            }
+
             return $room;
         });
 

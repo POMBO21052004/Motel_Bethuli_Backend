@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\Room;
 use App\Models\RoomImage;
 use App\Enums\RoomStatus;
+use App\Enums\ReservationStatus;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Carbon;
 use Illuminate\Validation\Rule;
 
 class RoomController extends Controller
@@ -35,6 +37,18 @@ class RoomController extends Controller
             $query->where('floor', $request->floor);
         }
 
+        // Date availability filter: load conflicting reservations instead of excluding rooms
+        if ($request->filled('start_date') && $request->filled('end_date')) {
+            $startDate = $request->start_date;
+            $endDate   = $request->end_date;
+
+            $query->with(['reservations' => function ($q) use ($startDate, $endDate) {
+                $q->whereNotIn('status', [ReservationStatus::CANCELLED->value])
+                  ->where('reservation_date', '<', $endDate)
+                  ->where('end_date', '>', $startDate);
+            }]);
+        }
+
         $stats = [
             'total'       => Room::count(),
             'available'   => Room::where('status', RoomStatus::AVAILABLE)->count(),
@@ -45,11 +59,26 @@ class RoomController extends Controller
         $perPage = min((int) $request->get('per_page', 12), 100);
         $rooms = $query->paginate($perPage);
 
+        // Append is_occupied_for_dates flag
+        $rooms->getCollection()->transform(function ($room) use ($request) {
+            if ($request->filled('start_date') && $request->filled('end_date')) {
+                $room->is_occupied_for_dates = $room->reservations->isNotEmpty();
+
+                // Also check capacity and price for disabledReason on backend
+                // (frontend will handle display, we just send the flag)
+                unset($room->reservations);
+            } else {
+                $room->is_occupied_for_dates = false;
+            }
+            return $room;
+        });
+
         return response()->json([
             'pagination' => $rooms,
             'stats'      => $stats,
         ]);
     }
+
 
     /**
      * Créer une nouvelle chambre.
