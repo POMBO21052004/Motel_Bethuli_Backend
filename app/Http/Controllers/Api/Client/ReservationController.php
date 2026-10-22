@@ -45,13 +45,10 @@ class ReservationController extends Controller
     {
         $user = $request->user();
         
-        // Vérification de la CNI
+        // CNI : lecture optionnelle (non bloquante)
+        // La CNI vérifiée accélère la validation de la réservation, mais n'est plus obligatoire.
         $profile = $user->customerProfile;
-        if (!$profile || !$profile->cni_verified) {
-            return response()->json([
-                'message' => 'Votre compte n\'est pas encore vérifié. Veuillez mettre à jour votre CNI dans votre profil pour pouvoir réserver.'
-            ], 403);
-        }
+        $cniVerified = $profile && $profile->cni_verified;
 
         $validated = $request->validate([
             'room_id'          => 'required|exists:rooms,id',

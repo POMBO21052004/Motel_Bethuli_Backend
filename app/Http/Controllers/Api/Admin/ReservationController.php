@@ -158,7 +158,7 @@ class ReservationController extends Controller
 
     public function show($id)
     {
-        $reservation = Reservation::with(['room.images', 'client'])->findOrFail($id);
+        $reservation = Reservation::with(['room.images', 'client.customerProfile'])->findOrFail($id);
         return response()->json(['data' => $reservation]);
     }
 

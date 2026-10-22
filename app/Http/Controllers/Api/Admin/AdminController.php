@@ -60,6 +60,7 @@ class AdminController extends Controller
             'room:id,name,description_fr,floor,capacity,price_per_day',
             'room.primaryImage:id,room_id,image_path',
             'client:id,nom,prenom,email,phone,profil',
+            'client.customerProfile:id,user_id,cni_verified',
             'receptionist:id,nom,prenom',
         ])->latest('reservation_date')->latest('start_time');
 
